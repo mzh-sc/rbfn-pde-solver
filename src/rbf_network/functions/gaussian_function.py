@@ -11,12 +11,11 @@ class GaussianFunction(BasisFunction, metaclass=ABCMeta):
     def __init__(self):
         BasisFunction.__init__(self)
 
-        self.center = None
-        self.parameters = None
+        self.a = None
 
     def y(self, x):
         return tf.exp(-tf.reduce_sum(tf.pow(x - self.center, 2)) /
-                      (2 * self.parameters * self.parameters))
+                      (2 * self.a * self.a))
 
 
 def track(func):

@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 class BasisFunction(metaclass=ABCMeta):
     def __init__(self):
-        pass
+        self.center = None
 
     @abstractmethod
     def y(self): pass
