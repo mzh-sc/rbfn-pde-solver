@@ -6,6 +6,7 @@ from rbf_network.consts import type
 
 import tensorflow as tf
 import math
+import utils
 
 
 class TestGaussianFunction(TestCase):
@@ -17,7 +18,7 @@ class TestGaussianFunction(TestCase):
 
             # case 1
             f.center = tf.Variable([1.5])  # [1.5], constant is ok
-            f.a = tf.Variable([1.0])
+            f.a = tf.Variable(1.0)
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(type)
@@ -37,7 +38,7 @@ class TestGaussianFunction(TestCase):
         with tf.Session() as s:
             f = GaussianFunction()
             f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)  # float32 e-8 precision
-            f.a = tf.Variable([1.2], dtype=tf.float64)
+            f.a = tf.Variable(1.2, dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
 
@@ -46,8 +47,7 @@ class TestGaussianFunction(TestCase):
             gradient = tf.gradients(f.y(x), [f.center, f.a])
 
             y = math.exp(-((2.5 - 1.5) ** 2 + (2.3 - 2.5) ** 2) / (2 * 1.2 ** 2))
-            self.assertSequenceEqual([val for e in s.run(gradient, {x: [2.5, 2.3]})
-                                            for val in e],
+            self.assertSequenceEqual(list(utils.flatten(s.run(gradient, {x: [2.5, 2.3]}))),
                                      [TestGaussianFunction.dydc1(1.5, 2.5, 1.2, 2.5, 2.3),
                                       TestGaussianFunction.dydc2(1.5, 2.5, 1.2, 2.5, 2.3),
                                       TestGaussianFunction.dyda(1.5, 2.5, 1.2, 2.5, 2.3)])
@@ -56,9 +56,10 @@ class TestGaussianFunction(TestCase):
         with tf.Session() as s:
             f = GaussianFunction()
             f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)
-            f.a = tf.Variable([1.2], dtype=tf.float64)
+            f.a = tf.Variable(1.2, dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
+
 
             x = tf.placeholder(tf.float64)
 
