@@ -1,27 +1,24 @@
 from unittest import TestCase
+from collections import Iterable
 
 import tensorflow as tf
 import math as math
-
-from rbf_network.functions.gaussian_function import GaussianFunction
-from rbf_network.network import Network
-from rbf_network.consts import type
-from collections import Iterable
+import rbf_network as rbfn
 
 
 class TestNetwork(TestCase):
     def test_y(self):
         with tf.Session() as s:
             #1-D
-            rbf1 = GaussianFunction()
+            rbf1 = rbfn.GaussianFunction()
             rbf1.center = tf.Variable([1.5], dtype=tf.float64)
             rbf1.a = tf.Variable(1.0, dtype=tf.float64)
 
-            rbf2 = GaussianFunction()
+            rbf2 = rbfn.GaussianFunction()
             rbf2.center = tf.Variable([1.2], dtype=tf.float64)
             rbf2.a = tf.Variable(0.1, dtype=tf.float64)
 
-            nn = Network([rbf1, rbf2])
+            nn = rbfn.Network([rbf1, rbf2])
             nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
@@ -32,15 +29,15 @@ class TestNetwork(TestCase):
                              0.5 * math.exp(-(1.0 - 1.2)**2 / (2 * 0.1**2)))
 
             # 2-D
-            rbf1 = GaussianFunction()
+            rbf1 = rbfn.GaussianFunction()
             rbf1.center = tf.Variable([1.5, 2], dtype=tf.float64)
             rbf1.a = tf.Variable(1.0, dtype=tf.float64)
 
-            rbf2 = GaussianFunction()
+            rbf2 = rbfn.GaussianFunction()
             rbf2.center = tf.Variable([1.2, 1.1], dtype=tf.float64)
             rbf2.a = tf.Variable(0.1, dtype=tf.float64)
 
-            nn = Network([rbf1, rbf2])
+            nn = rbfn.Network([rbf1, rbf2])
             nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
@@ -67,15 +64,15 @@ class TestNetwork(TestCase):
         """
         with tf.Session() as s:
             #---------- working example without aggregation
-            rbf1 = GaussianFunction()
+            rbf1 = rbfn.GaussianFunction()
             rbf1.center = tf.Variable([1.5], dtype=tf.float64)
             rbf1.a = tf.Variable(0.1, dtype=tf.float64)
 
-            rbf2 = GaussianFunction()
+            rbf2 = rbfn.GaussianFunction()
             rbf2.center = tf.Variable([1.2], dtype=tf.float64)
             rbf2.a = tf.Variable(0.1, dtype=tf.float64)
 
-            nn = Network([rbf1, rbf2])
+            nn = rbfn.Network([rbf1, rbf2])
             nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
@@ -102,15 +99,15 @@ class TestNetwork(TestCase):
             parameters = tf.Variable([1.5, 1.0, 1.2, 0.1], dtype=tf.float64)
 
             parameters_per_rbf = tf.reshape(parameters, [-1, 2]) #[[r1.c, r1.a], [r2.c, r2.a]]
-            rbf1 = GaussianFunction()
+            rbf1 = rbfn.GaussianFunction()
             rbf1.center = tf.reshape(parameters_per_rbf[0][0], [1]) #tf.Variable([1.5], dtype=tf.float64)
             rbf1.a = parameters_per_rbf[0][1] #tf.Variable(0.1, dtype=tf.float64)
 
-            rbf2 = GaussianFunction()
+            rbf2 = rbfn.GaussianFunction()
             rbf2.center = tf.reshape(parameters_per_rbf[1][0], [1])
             rbf2.a = parameters_per_rbf[1][1]
 
-            nn = Network([rbf1, rbf2])
+            nn = rbfn.Network([rbf1, rbf2])
             nn.weights = weights
 
             s.run(tf.global_variables_initializer())

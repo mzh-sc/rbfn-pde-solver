@@ -1,27 +1,25 @@
 from unittest import TestCase
 
-from rbf_network.functions.gaussian_function import GaussianFunction
 from tests.utils import utils
-from rbf_network.consts import type
 
 import tensorflow as tf
 import math
 import utils
-
+import rbf_network as rbfn
 
 class TestGaussianFunction(TestCase):
     delta = 1e-5
 
     def test_y(self):
         with tf.Session() as s:
-            f = GaussianFunction()
+            f = rbfn.GaussianFunction()
 
             # case 1
             f.center = tf.Variable([1.5])  # [1.5], constant is ok
             f.a = tf.Variable(1.0)
             s.run(tf.global_variables_initializer())
 
-            x = tf.placeholder(type)
+            x = tf.placeholder(rbfn.type)
             self.assertAlmostEqual(s.run(f.y(x), {x: [2.5]}), math.exp(-(2.5 - 1.5) ** 2 / (2 * 1 ** 2)),
                                    delta=self.delta)
 
@@ -30,13 +28,13 @@ class TestGaussianFunction(TestCase):
             f.a = tf.Variable([1.2])
             s.run(tf.global_variables_initializer())
 
-            x = tf.placeholder(type)
+            x = tf.placeholder(rbfn.type)
             self.assertAlmostEqual(s.run(f.y(x), {x: [2.5, 2.3]}), math.exp(-((2.5 - 1.5) ** 2 + (2.3 - 2.5) ** 2)
                                                                             / (2 * 1.2 ** 2)), delta=self.delta)
 
     def test_y_gradient(self):
         with tf.Session() as s:
-            f = GaussianFunction()
+            f = rbfn.GaussianFunction()
             f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)  # float32 e-8 precision
             f.a = tf.Variable(1.2, dtype=tf.float64)
 
@@ -54,7 +52,7 @@ class TestGaussianFunction(TestCase):
 
     def test_y_gradient_performance(self):
         with tf.Session() as s:
-            f = GaussianFunction()
+            f = rbfn.GaussianFunction()
             f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)
             f.a = tf.Variable(1.2, dtype=tf.float64)
 

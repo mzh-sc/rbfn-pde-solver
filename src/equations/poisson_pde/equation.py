@@ -1,12 +1,26 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import numpy as np
 
 from rbf_network.consts import type
 from rbf_network.network import Network
 
-dim = 1
-nn_size = 5
-cp_count = 10
+dim = 2
+n_neurons = 5
+
+#control points
+n_x = 10
+n_y = 10
+
+a_x = 0
+b_x = 1
+
+a_y = 0
+b_y = 1
+
+X, Y = np.meshgrid(np.linspace(a_x, b_x, n_x),
+    np.linspace(a_y, b_y, n_y))
+
 
 weights = tf.Variable(tf.ones([nn_size], type))
 centers = tf.Variable(tf.linspace(0.0, 1.0, nn_size), type)
