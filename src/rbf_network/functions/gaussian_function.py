@@ -3,7 +3,7 @@ import tensorflow as tf
 from abc import ABCMeta
 from rbf_network.functions.basis_function import BasisFunction
 
-class GaussianFunction(BasisFunction, metaclass=ABCMeta):
+class Gaussian(BasisFunction, metaclass=ABCMeta):
     def __init__(self):
         BasisFunction.__init__(self)
 

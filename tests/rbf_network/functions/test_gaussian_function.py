@@ -12,7 +12,7 @@ class TestGaussianFunction(TestCase):
 
     def test_y(self):
         with tf.Session() as s:
-            f = rbfn.GaussianFunction()
+            f = rbfn.Gaussian()
 
             # case 1
             f.center = tf.Variable([1.5])  # [1.5], constant is ok
@@ -34,7 +34,7 @@ class TestGaussianFunction(TestCase):
 
     def test_y_gradient(self):
         with tf.Session() as s:
-            f = rbfn.GaussianFunction()
+            f = rbfn.Gaussian()
             f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)  # float32 e-8 precision
             f.a = tf.Variable(1.2, dtype=tf.float64)
 
@@ -52,7 +52,7 @@ class TestGaussianFunction(TestCase):
 
     def test_y_gradient_performance(self):
         with tf.Session() as s:
-            f = rbfn.GaussianFunction()
+            f = rbfn.Gaussian()
             f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)
             f.a = tf.Variable(1.2, dtype=tf.float64)
 

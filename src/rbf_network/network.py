@@ -6,7 +6,7 @@ class Network(object):
         self.weights = None
 
     def y(self, x):
-        return tf.reduce_sum(self.weights * [e.y(x) for e in self])
+        return tf.reduce_sum(self.weights * tf.stack([e.y(x) for e in self]))
 
     def __iter__(self):
         return iter(self._functions)
