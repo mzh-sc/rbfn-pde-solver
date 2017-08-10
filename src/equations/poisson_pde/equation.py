@@ -1,8 +1,12 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
+
 import rbf_network as rbfn
-import math as math
+import math
+import time
 
 from rbf_network.consts import type
 from rbf_network.network import Network
@@ -15,10 +19,13 @@ b_x = 1
 a_y = 0
 b_y = 1
 
+X = np.linspace(a_x, b_x, 10, dtype=np.float32)
+Y = np.linspace(a_y, b_y, 10, dtype=np.float32)
+X, Y = np.meshgrid(X, Y)
+
+
 #train points
-train_points = np.array([[x, y]
-                         for x in np.linspace(a_x, b_x, 10)
-                            for y in np.linspace(a_y, b_y, 10)], dtype=np.float32)
+train_points = np.stack((np.reshape(X, (-1)), np.reshape(Y, (-1))), axis=-1)
 
    # np.stack(
    # np.reshape(
@@ -37,6 +44,8 @@ with tf.Session() as s:
     weights = tf.Variable(neuron_weights, dtype=type)
     centers = tf.Variable(neuron_centers, dtype=type)
     parameters = tf.Variable(neuron_parameters, dtype=type)
+
+    s.run(tf.global_variables_initializer())
 
     rbfs = []
     for i in range(n_neurons):
@@ -64,23 +73,32 @@ with tf.Session() as s:
     train = optimizer.minimize(error, var_list=[weights])
 
     #todo: tests
-    #todo: matplot
+
+    fig = plt.figure()
     plt.ion()
-    fig, ax = plt.subplots(1, 1)
-    fig.show()
+    plt.show()
+
+    error_axes = fig.add_subplot(1, 2, 1)
+    error_axes.grid(True)
+    error_axes.set_ylabel('Error')
+
+    surface_axes = fig.add_subplot(1, 2, 2, projection='3d')
+    surface_axes.grid(True)
+    surface_axes.set_ylabel('Solution')
     plt.draw()
 
     yerror = []
-
-    s.run(tf.global_variables_initializer())
     # training loop
     for i in range(1000):
         s.run(train, {xs: train_points})
 
         #if i % 20 == 0:
         yerror.append(s.run(error, {xs: train_points}))
-        ax.plot(range(len(yerror)), yerror)
-        fig.show()
+        error_axes.plot(range(len(yerror)), yerror, 'bo')
+
+        surface_axes.plot_surface(X, Y, [s.run(nn.y(x)) for x in train_points], cmap=cm.coolwarm,
+                               linewidth=0, antialiased=False)
+
         plt.draw()
 
     # evaluate training accuracy
