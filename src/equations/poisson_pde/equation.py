@@ -23,7 +23,6 @@ X = np.linspace(a_x, b_x, 10, dtype=np.float32)
 Y = np.linspace(a_y, b_y, 10, dtype=np.float32)
 X, Y = np.meshgrid(X, Y)
 
-
 #train points
 train_points = np.stack((np.reshape(X, (-1)), np.reshape(Y, (-1))), axis=-1)
 
@@ -76,9 +75,9 @@ with tf.Session() as s:
 
     fig = plt.figure()
     plt.ion()
-    plt.show()
 
     error_axes = fig.add_subplot(1, 2, 1)
+    #error_axes.set_yscale('log')
     error_axes.grid(True)
     error_axes.set_ylabel('Error')
 
@@ -92,14 +91,25 @@ with tf.Session() as s:
     for i in range(1000):
         s.run(train, {xs: train_points})
 
-        #if i % 20 == 0:
-        yerror.append(s.run(error, {xs: train_points}))
-        error_axes.plot(range(len(yerror)), yerror, 'bo')
+        curr_error = s.run(error, {xs: train_points})
+        print("Error: {}".format(curr_error))
 
-        surface_axes.plot_surface(X, Y, [s.run(nn.y(x)) for x in train_points], cmap=cm.coolwarm,
-                               linewidth=0, antialiased=False)
+        #if i % 20 == 0:
+        yerror.append(curr_error)
+        error_axes.plot(range(len(yerror)), yerror, 'b-')
+
+        surface_axes.cla()
+        surface_axes.plot_surface(X, Y, s.run(
+            tf.reshape(
+                tf.map_fn(lambda x: nn.y(x),
+                          tf.stack((tf.reshape(X.astype(np.float32), [-1]),
+                                    tf.reshape(Y.astype(np.float32), [-1])), axis=-1), dtype=type), shape=[10, 10])),
+            cmap=cm.coolwarm,
+            linewidth=0,
+            antialiased=False)
 
         plt.draw()
+        plt.pause(0.005)
 
     # evaluate training accuracy
     curr_error = s.run(error, {xs: train_points})

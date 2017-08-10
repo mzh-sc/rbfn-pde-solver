@@ -39,3 +39,11 @@ map_fn
 reshape
     parameters = tf.Variable([1.5, 1.0, 1.2, 0.1], dtype=tf.float64)
     tf.reshape(parameters, [-1, 2]) #[[r1.c, r1.a], [r2.c, r2.a]]
+
+numpy.frompyfunc
+    apply function to each element of collection(s) keeping shape
+
+    np.frompyfunc(lambda x, y: s.run(nn.y([x, y])), 2, 1)(X, Y)
+
+numpy.vectorize (more generic than frompyfunc)
+    apply function to each element of collection(s) keeping shape
