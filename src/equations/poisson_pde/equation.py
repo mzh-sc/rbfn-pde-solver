@@ -40,6 +40,8 @@ neuron_weights = np.ones(n_neurons)
 
 
 with tf.Session() as s:
+    t_org = time.perf_counter()
+
     weights = tf.Variable(neuron_weights, dtype=type)
     centers = tf.Variable(neuron_centers, dtype=type)
     parameters = tf.Variable(neuron_parameters, dtype=type)
@@ -62,10 +64,14 @@ with tf.Session() as s:
     ys_exp = tf.constant([math.sin(math.pi * e[0]) * math.sin(math.pi * e[1])
                 for e in train_points], dtype=type)
 
+    def equation(y, x):
+        h = tf.hessians(y(x), x)[0]
+        return h[0][0] + h[1][1]
+
     # instead of reduce_sum use reduce_mean here. See
     # https://stackoverflow.com/questions/43145847/tensorflow-loss-minimization-is-increasing-loss
     error = tf.reduce_mean(tf.square(ys_exp -
-        tf.map_fn(lambda x: tf.reduce_sum(tf.hessians(nn.y(x), x)), xs)))
+        tf.map_fn(lambda x: equation(nn.y, x), xs)))
 
     # optimizer
     optimizer = tf.train.GradientDescentOptimizer(0.01)
@@ -86,9 +92,14 @@ with tf.Session() as s:
     surface_axes.set_ylabel('Solution')
     plt.draw()
 
+    t_end = time.perf_counter()
+    print('Duration of {}'.format(t_end - t_org))
+
     yerror = []
     # training loop
     for i in range(1000):
+        t_org = time.perf_counter()
+
         s.run(train, {xs: train_points})
 
         curr_error = s.run(error, {xs: train_points})
@@ -109,6 +120,10 @@ with tf.Session() as s:
             antialiased=False)
 
         plt.draw()
+
+        t_end = time.perf_counter()
+        print('Duration of {}'.format(t_end - t_org))
+
         plt.pause(0.005)
 
     # evaluate training accuracy
