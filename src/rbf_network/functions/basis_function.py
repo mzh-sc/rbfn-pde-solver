@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class BasisFunction(metaclass=ABCMeta):
+
     def __init__(self):
         self.center = None
 

@@ -21,10 +21,10 @@ b_y = 1
 
 X = np.linspace(a_x, b_x, 10, dtype=np.float32)
 Y = np.linspace(a_y, b_y, 10, dtype=np.float32)
-X, Y = np.meshgrid(X, Y)
+X, Y = np.meshgrid(X, Y) #X,Y shapes - (10, 10) [[1,2,..10],[1,2,..10],..[1,2,..10]]
 
 #train points
-train_points = np.stack((np.reshape(X, (-1)), np.reshape(Y, (-1))), axis=-1)
+train_points = np.stack((np.reshape(X, (-1)), np.reshape(Y, (-1))), axis=-1) #shape (100, 2) [[1,1],[2,1],..[10,1],[1,2],..[10,10]]
 
    # np.stack(
    # np.reshape(
@@ -42,9 +42,9 @@ neuron_weights = np.ones(n_neurons)
 with tf.Session() as s:
     t_org = time.perf_counter()
 
-    weights = tf.Variable(neuron_weights, dtype=type)
-    centers = tf.Variable(neuron_centers, dtype=type)
-    parameters = tf.Variable(neuron_parameters, dtype=type)
+    weights = tf.Variable(neuron_weights, dtype=type) #(5,)
+    centers = tf.Variable(neuron_centers, dtype=type) #(5,2)
+    parameters = tf.Variable(neuron_parameters, dtype=type) #(5,)
 
     s.run(tf.global_variables_initializer())
 
@@ -59,10 +59,10 @@ with tf.Session() as s:
     nn.weights = weights
 
 
-    xs = tf.placeholder(dtype=type, shape=(train_points.shape[0], dim))
+    xs = tf.placeholder(dtype=type, shape=(train_points.shape[0], dim)) #(100,2)
 
     ys_exp = tf.constant([math.sin(math.pi * e[0]) * math.sin(math.pi * e[1])
-                for e in train_points], dtype=type)
+                for e in train_points], dtype=type) #(100,)
 
     def equation(y, x):
         h = tf.hessians(y(x), x)[0]

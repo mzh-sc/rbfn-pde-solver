@@ -4,6 +4,8 @@ from abc import ABCMeta
 from rbf_network.functions.basis_function import BasisFunction
 
 class Gaussian(BasisFunction, metaclass=ABCMeta):
+    name = 'gaussian'
+
     def __init__(self):
         BasisFunction.__init__(self)
 
