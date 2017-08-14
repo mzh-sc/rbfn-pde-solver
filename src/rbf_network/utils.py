@@ -1,4 +1,5 @@
 import numpy as np
+from collections import Iterable
 
 
 def random_points_1d(from1, to1, count1):

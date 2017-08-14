@@ -52,7 +52,7 @@ with tf.Session() as s:
     for i in range(n_neurons):
         rbf = rbfn.Gaussian()
         rbf.center = centers[i]
-        rbf.a = parameters[i]
+        rbf.parameters = parameters[i]
         rbfs.append(rbf)
 
     nn = Network(rbfs)

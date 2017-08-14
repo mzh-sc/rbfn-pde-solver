@@ -12,11 +12,11 @@ class TestNetwork(TestCase):
             #1-D
             rbf1 = rbfn.Gaussian()
             rbf1.center = tf.Variable([1.5], dtype=tf.float64)
-            rbf1.a = tf.Variable(1.0, dtype=tf.float64)
+            rbf1.parameters = tf.Variable(1.0, dtype=tf.float64)
 
             rbf2 = rbfn.Gaussian()
             rbf2.center = tf.Variable([1.2], dtype=tf.float64)
-            rbf2.a = tf.Variable(0.1, dtype=tf.float64)
+            rbf2.parameters = tf.Variable(0.1, dtype=tf.float64)
 
             nn = rbfn.Network([rbf1, rbf2])
             nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
@@ -31,11 +31,11 @@ class TestNetwork(TestCase):
             # 2-D
             rbf1 = rbfn.Gaussian()
             rbf1.center = tf.Variable([1.5, 2], dtype=tf.float64)
-            rbf1.a = tf.Variable(1.0, dtype=tf.float64)
+            rbf1.parameters = tf.Variable(1.0, dtype=tf.float64)
 
             rbf2 = rbfn.Gaussian()
             rbf2.center = tf.Variable([1.2, 1.1], dtype=tf.float64)
-            rbf2.a = tf.Variable(0.1, dtype=tf.float64)
+            rbf2.parameters = tf.Variable(0.1, dtype=tf.float64)
 
             nn = rbfn.Network([rbf1, rbf2])
             nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
@@ -66,11 +66,11 @@ class TestNetwork(TestCase):
             #---------- working example without aggregation
             rbf1 = rbfn.Gaussian()
             rbf1.center = tf.Variable([1.5], dtype=tf.float64)
-            rbf1.a = tf.Variable(0.1, dtype=tf.float64)
+            rbf1.parameters = tf.Variable(0.1, dtype=tf.float64)
 
             rbf2 = rbfn.Gaussian()
             rbf2.center = tf.Variable([1.2], dtype=tf.float64)
-            rbf2.a = tf.Variable(0.1, dtype=tf.float64)
+            rbf2.parameters = tf.Variable(0.1, dtype=tf.float64)
 
             nn = rbfn.Network([rbf1, rbf2])
             nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
@@ -78,7 +78,7 @@ class TestNetwork(TestCase):
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(dtype=tf.float64)
-            gradient = tf.gradients(nn.y(x), [nn.weights, rbf1.center, rbf1.a, rbf2.center, rbf2.a])
+            gradient = tf.gradients(nn.y(x), [nn.weights, rbf1.center, rbf1.parameters, rbf2.center, rbf2.parameters])
             res_gradient = s.run(gradient, {x: [1.0]});
             self.assertEqual(len(res_gradient), 5)
             self.assertEqual(len(res_gradient[0]), 2)
@@ -87,7 +87,7 @@ class TestNetwork(TestCase):
 
             #---------- not working example with aggregation
             gradient = tf.gradients(nn.y(x), [tf.reshape(e, []) for e in tf.split(nn.weights, num_or_size_splits=2, axis=0)] +  #tf.Variable([1.0, 0.5], dtype=tf.float64) - shape (2,) to [(),()]
-                                    [tf.reshape(rbf1.center, []), rbf1.a, tf.reshape(rbf2.center, []), rbf2.a]) #list of 6 tensor with () shape
+                                    [tf.reshape(rbf1.center, []), rbf1.parameters, tf.reshape(rbf2.center, []), rbf2.parameters]) #list of 6 tensor with () shape
 
             #implemented throw __enter__ __exit___
             with self.assertRaises(TypeError):
@@ -101,11 +101,11 @@ class TestNetwork(TestCase):
             parameters_per_rbf = tf.reshape(parameters, [-1, 2]) #[[r1.c, r1.a], [r2.c, r2.a]]
             rbf1 = rbfn.Gaussian()
             rbf1.center = tf.reshape(parameters_per_rbf[0][0], [1]) #tf.Variable([1.5], dtype=tf.float64)
-            rbf1.a = parameters_per_rbf[0][1] #tf.Variable(0.1, dtype=tf.float64)
+            rbf1.parameters = parameters_per_rbf[0][1] #tf.Variable(0.1, dtype=tf.float64)
 
             rbf2 = rbfn.Gaussian()
             rbf2.center = tf.reshape(parameters_per_rbf[1][0], [1])
-            rbf2.a = parameters_per_rbf[1][1]
+            rbf2.parameters = parameters_per_rbf[1][1]
 
             nn = rbfn.Network([rbf1, rbf2])
             nn.weights = weights

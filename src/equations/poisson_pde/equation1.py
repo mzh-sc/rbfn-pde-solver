@@ -43,3 +43,7 @@ solver.set_control_points('bc1', 100,
                           uniform_points_2d(0, 1, 10, 1, 1, 1) +
                           uniform_points_2d(0, 0, 1, 0, 1, 10) +
                           uniform_points_2d(1, 1, 1, 0, 1, 10))
+
+solver.compile()
+while True:
+    solver.train()

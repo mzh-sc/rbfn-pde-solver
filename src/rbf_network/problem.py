@@ -9,3 +9,6 @@ class Problem(object):
 
     def add_constrain(self, constrain_name, left, right):
         self.constrains[constrain_name] = Problem.__Constrain(left=left, right=right)
+
+    def compile(self):
+        pass
