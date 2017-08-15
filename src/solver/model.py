@@ -1,7 +1,6 @@
 from collections import namedtuple
 
 import tensorflow as tf
-import numpy as np
 import rbf_network as nn
 
 

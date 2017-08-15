@@ -9,7 +9,7 @@ def random_points_1d(from1, to1, count1):
 def random_points_2d(from1, to1,
                      from2, to2,
                      count):
-    return np.matmul(np.random.rand(count, 2), np.diag([to1 - from1, to2 - from2]))
+    return np.matmul(np.random.rand(count, 2), np.diag([to1 - from1, to2 - from2])).tolist()
 
 
 def uniform_points_1d(from1, to1, count1):

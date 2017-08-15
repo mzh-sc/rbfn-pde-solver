@@ -1,11 +1,14 @@
 import tensorflow as tf
 import rbf_network as nn
 
-from rbf_network.model import Model
-from rbf_network.problem import Problem
-
+from solver.model import Model
+from solver.problem import Problem
 
 class Solver(object):
+    __known_metrics = {
+        'error': lambda self: tf.get_default_session().run(self.__error, feed_dict=self.__feed_dict)
+    }
+
     def __init__(self, problem, model):
         self.__problem = problem
         self.__model = model
@@ -14,6 +17,8 @@ class Solver(object):
 
         self.__feed_dict = {}
         self.__error = None
+        self.__minimize = None
+        self.__metric = None
 
     @property
     def error(self):
@@ -30,10 +35,7 @@ class Solver(object):
         self.__constrain_control_points_weights[constrain_name] = weight
         self.__constrain_control_points[constrain_name] = points
 
-    def compile(self):
-        self.__model.compile()
-        self.__problem.compile()
-
+    def compile(self, optimizer, variables, metrics=['error']):
         self.__feed_dict = {}
 
         control_points_error = tf.constant([], dtype=nn.type, shape=(0,))
@@ -45,12 +47,22 @@ class Solver(object):
             xs = tf.placeholder(dtype=nn.type, shape=(len(train_points), len(train_points[0])))
             self.__feed_dict[xs] = train_points
 
+            #todo: [opt] optimize using bulk computation (see: map_fn in TestPerformance and equation)
             for index in range(len(train_points)):
                 x = xs[index]
                 expected = constrain.right(x)
                 real = constrain.left(self.__model.network.y, x)
                 control_points_error = tf.concat([control_points_error, tf.expand_dims(alpha * tf.square(expected - real), 0)], 0)
+
         self.__error = control_points_error
+        self.__minimize = optimizer.minimize(self.__error, var_list=variables)
+        self.__metric = metrics
+
+    def fit(self):
+        tf.get_default_session().run(self.__minimize, feed_dict=self.__feed_dict)
+        return tuple([Solver.__known_metrics[e](self) if e in Solver.__known_metrics
+                              else None
+                      for e in self.__metric])
 
 if __name__ == '__main__':
     model = Model()
