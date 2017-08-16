@@ -60,7 +60,7 @@ solver.set_control_points('bc1', 100,
                           ps.uniform_points_2d(1, 1, 1, 0, 1, 10))
 
 solver.compile(optimizer=tf.train.GradientDescentOptimizer(0.01),
-               variables=[model.weights], #, model.centers, model.parameters
+               variables=[model.weights],
                metrics=['error'])
 ```
 
