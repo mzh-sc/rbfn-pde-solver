@@ -47,14 +47,12 @@ class Solver(object):
             xs = tf.placeholder(dtype=nn.type, shape=(len(train_points), len(train_points[0])))
             self.__feed_dict[xs] = train_points
 
-            #todo: [opt] optimize using bulk computation (see: map_fn in TestPerformance and equation)
-            for index in range(len(train_points)):
-                x = xs[index]
-                expected = constrain.right(x)
-                real = constrain.left(self.__model.network.y, x)
-                control_points_error = tf.concat([control_points_error, tf.expand_dims(alpha * tf.square(expected - real), 0)], 0)
+            control_points_error = tf.concat([control_points_error,
+                                              tf.map_fn(lambda x: alpha * tf.square(constrain.right(x) -
+                                                                            constrain.left(self.__model.network.y, x)), xs)], 0)
 
-        self.__error = control_points_error
+
+        self.__error = tf.reduce_mean(control_points_error)
         self.__minimize = optimizer.minimize(self.__error, var_list=variables)
         self.__metric = metrics
 

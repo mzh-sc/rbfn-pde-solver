@@ -23,10 +23,11 @@ class Surface(object):
     def update(self):
         self.__axes.cla()
         self.__axes.plot_surface(self.__X, self.__Y,
-            tf.reshape(
-                tf.map_fn(lambda x: self.__function(x),
-                          tf.stack((tf.reshape(self.__X.astype(np.float32), [-1]),
-                                    tf.reshape(self.__Y.astype(np.float32), [-1])), axis=-1), dtype=nn.type), shape=[10, 10]),
+            tf.get_default_session().run(
+                tf.reshape(
+                    tf.map_fn(lambda x: self.__function(x),
+                              tf.stack((tf.reshape(self.__X.astype(np.float32), [-1]),
+                                        tf.reshape(self.__Y.astype(np.float32), [-1])), axis=-1), dtype=nn.type), shape=[10, 10])),
                                   cmap=cm.coolwarm,
                                   linewidth=0,
                                   antialiased=False)
