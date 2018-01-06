@@ -7,7 +7,7 @@ from unittest import TestCase
 from matplotlib import cm
 
 class TestMatplotlib(TestCase):
-    def test_3d_surface(self):
+    def test_try_3d_surface(self):
         fig = plt.figure()
         axes = fig.gca(projection='3d') #Get the current Axes instance on the current figure matching the given keyword args, or create one.
 
@@ -32,7 +32,7 @@ class TestMatplotlib(TestCase):
 
         plt.show()
 
-    def test_2d_3d(self):
+    def test_try_2d_3d(self):
         # Twice as wide as it is tall
         # default size ratio
         w, h = plt.figaspect(0.5)

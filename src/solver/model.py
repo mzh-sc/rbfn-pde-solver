@@ -5,7 +5,11 @@ import rbf_network as nn
 
 
 class Model(object):
-    #region class members
+    """
+    Model is responsible for RBF neural network construction
+    """
+
+    # region class members
 
     __known_rbfs = {}
 
@@ -18,7 +22,7 @@ class Model(object):
     def _add_known_rbf_type(rbf_name, create_func):
         Model.__known_rbfs[rbf_name] = create_func
 
-    #endregion
+    # endregion
 
     __rbf = namedtuple('Rbf', ['name', 'weight', 'center', 'parameters'])
 
@@ -28,14 +32,26 @@ class Model(object):
 
     @property
     def weights(self):
+        """
+        The RBFN weights
+        :return: variable having the shape (rbfs_count,)
+        """
         return self.__nn_weights
 
     @property
     def centers(self):
+        """
+        The RBFN centers
+        :return: variable having the shape (rbfs_count, dimention)
+        """
         return self.__nn_centers
 
     @property
     def parameters(self):
+        """
+        The RBFN parameters
+        :return: variable having the shape (rbfs_count, parameters count)
+        """
         return self.__nn_parameters
 
     def __init__(self):
@@ -60,21 +76,27 @@ class Model(object):
         center_dim = len(rbf_0.center)
         parameters_count = len(rbf_0.parameters)
 
-        self.__nn_weights = tf.get_variable("wieghts", shape=(rbfs_count,), dtype=nn.type)
-        self.__nn_centers = tf.get_variable("centers", shape=(rbfs_count, center_dim), dtype=nn.type)
-        self.__nn_parameters = tf.get_variable("parameters", shape=(rbfs_count, parameters_count), dtype=nn.type)
-
+        # aggregate all wights, centers and parameters to initialize network variables
         rbfs = []
         ws = []
         cs = []
         ps = []
         for i, (rbf_name, w, c, p) in enumerate(self.__rbfs):
-            func = self.__known_rbfs[rbf_name]
-
             ws.append(w)
             cs.append(c)
             ps.append(p)
 
+        # the network's aggregated variables (for continence. See test_variables_aggregation in test_network) creation
+        self.__nn_weights = tf.get_variable("wieghts", initializer=tf.constant(ws, dtype=nn.type, shape=(rbfs_count,)),
+                                            dtype=nn.type)
+        self.__nn_centers = tf.get_variable("centers",
+                                            initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count, center_dim)),
+                                            dtype=nn.type)
+        self.__nn_parameters = tf.get_variable("parameters", initializer=tf.constant(ps, dtype=nn.type,
+                                               shape=(rbfs_count, parameters_count)), dtype=nn.type)
+
+        # rbfs creation
+        for i, (rbf_name, w, c, p) in enumerate(self.__rbfs):
             rbf = self.__known_rbfs[rbf_name]()
             rbf.center = self.__nn_centers[i]
             rbf.parameters = self.__nn_parameters[i]
@@ -83,16 +105,12 @@ class Model(object):
         self.__nn = nn.Network(rbfs)
         self.__nn.weights = self.__nn_weights
 
-        tf.assign(self.__nn_weights, ws).eval()
-        tf.assign(self.__nn_centers, cs).eval()
-        tf.assign(self.__nn_parameters, ps).eval()
+        # can not do it here as later have to invoke global initializer that reset these values
+        # moreover it is even better to do it via constant initializer as it isn't required to the create session
+        # tf.assign(self.__nn_weights, ws).eval()
+        # tf.assign(self.__nn_centers, cs).eval()
+        # tf.assign(self.__nn_parameters, ps).eval()
+
 
 if __name__ == '__main__':
-    model = Model()
-    model.add_rbf(1, rbf_name='gaussian', center=[1, 0], parameters=[1])
-    model.add_rbf(1, rbf_name='gaussian', center=[1, 0], parameters=[1])
-
-    with tf.Session() as s:
-        model.compile()
-
-        s.run(model.network.y([2, 0]))
+    pass

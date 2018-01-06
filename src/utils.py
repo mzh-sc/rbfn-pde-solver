@@ -14,3 +14,8 @@ def flatten(collection):
                 yield j
         else:
             yield i
+
+
+if __name__ == '__main__':
+    # todo: unit tests
+    pass
