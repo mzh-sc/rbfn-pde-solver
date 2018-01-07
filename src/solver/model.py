@@ -86,24 +86,27 @@ class Model(object):
             cs.append(c)
             ps.append(p)
 
-        # the network's aggregated variables (for continence. See test_variables_aggregation in test_network) creation
-        self.__nn_weights = tf.get_variable("wieghts", initializer=tf.constant(ws, dtype=nn.type, shape=(rbfs_count,)),
-                                            dtype=nn.type)
-        self.__nn_centers = tf.get_variable("centers",
-                                            initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count, center_dim)),
-                                            dtype=nn.type)
-        self.__nn_parameters = tf.get_variable("parameters", initializer=tf.constant(ps, dtype=nn.type,
-                                               shape=(rbfs_count, parameters_count)), dtype=nn.type)
+        with tf.name_scope("model-compile-aggregated-variables-creation"):
+            # the network's aggregated variables (for continence. See test_variables_aggregation in test_network) creation
+            self.__nn_weights = tf.get_variable("wieghts", initializer=tf.constant(ws, dtype=nn.type, shape=(rbfs_count,)),
+                                                dtype=nn.type)
+            self.__nn_centers = tf.get_variable("centers",
+                                                initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count, center_dim)),
+                                                dtype=nn.type)
+            self.__nn_parameters = tf.get_variable("parameters", initializer=tf.constant(ps, dtype=nn.type,
+                                                   shape=(rbfs_count, parameters_count)), dtype=nn.type)
 
-        # rbfs creation
-        for i, (rbf_name, w, c, p) in enumerate(self.__rbfs):
-            rbf = self.__known_rbfs[rbf_name]()
-            rbf.center = self.__nn_centers[i]
-            rbf.parameters = self.__nn_parameters[i]
-            rbfs.append(rbf)
+        with tf.name_scope("model-compile-rbfs-creation"):
+            # rbfs creation
+            for i, (rbf_name, w, c, p) in enumerate(self.__rbfs):
+                rbf = self.__known_rbfs[rbf_name]()
+                rbf.center = self.__nn_centers[i]
+                rbf.parameters = self.__nn_parameters[i]
+                rbfs.append(rbf)
 
-        self.__nn = nn.Network(rbfs)
-        self.__nn.weights = self.__nn_weights
+        with tf.name_scope("model-compile-network-creation"):
+            self.__nn = nn.Network(rbfs)
+            self.__nn.weights = self.__nn_weights
 
         # can not do it here as later have to invoke global initializer that reset these values
         # moreover it is even better to do it via constant initializer as it isn't required to the create session

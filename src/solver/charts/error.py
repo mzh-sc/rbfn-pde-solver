@@ -3,6 +3,7 @@ class Error(object):
         self.__axes = figure.add_subplot(position)
         self.__axes.grid(True)
         self.__axes.set_ylabel('Error')
+        self.__axes.set_yscale("log", nonposy='clip')
 
         self.__errors = []
 

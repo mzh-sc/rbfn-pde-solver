@@ -1,3 +1,4 @@
+{AppData}\Local\Programs\Python\Python35\Scripts\ .\tensorboard --logdir \tf_logs
 if ``axis=-1`` it will be the last dimension
 
 tf.unstack (old name unpack)

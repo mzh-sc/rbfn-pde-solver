@@ -21,7 +21,8 @@ class TestTensorflow(TestCase):
         1. Calculate hessian for all points at once
         2. Calculate Hessian in each point separately using map_fn
 
-        The former approach takes more time as it seems that TF constructs graph for each point in this case.
+        The former approach takes more time as it seems that TF constructs graph for each point in this case and
+        Hessian matrix is 10x10 size sparse matrix
         :return:
         """
         with tf.Session() as s:
@@ -31,7 +32,8 @@ class TestTensorflow(TestCase):
             feed = [[1.2], [2.2], [3.1], [0.2], [-3], [2], [5], [51], [0], [10]]
 
             x1 = tf.reshape(x, [10])
-            case1 = lambda: s.run(tf.diag_part(tf.squeeze(tf.hessians(f(x1), x1), axis=0)), {x: feed})
+            # hessian function output has the shape (1, 10, 10)
+            case1 = lambda: s.run(tf.diag_part(tf.squeeze(tf.hessians(f(x1), x1), {x: feed})))
             duration(case1, "for all points at once. First run.")
             res1 = duration(case1, "for all points at once. Second run.")
 
@@ -40,4 +42,6 @@ class TestTensorflow(TestCase):
             duration(case2, "in each point separetely. First run.")
             res2 = duration(case2, "in each point separetely. First run.")
 
-            self.assertSequenceEqual(list(flatten(res1)), list(flatten(res2)))
+            expectedResult = [7.2, 13.2, 18.6, 1.2, -18, 12, 30, 306, 0, 60]
+            np.testing.assert_almost_equal(list(flatten(res1)), expectedResult, decimal=1)
+            np.testing.assert_almost_equal(list(flatten(res2)), expectedResult, decimal=1)
