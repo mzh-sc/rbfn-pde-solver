@@ -88,13 +88,9 @@ class Model(object):
 
         with tf.name_scope("model-compile-aggregated-variables-creation"):
             # the network's aggregated variables (for continence. See test_variables_aggregation in test_network) creation
-            self.__nn_weights = tf.get_variable("wieghts", initializer=tf.constant(ws, dtype=nn.type, shape=(rbfs_count,)),
-                                                dtype=nn.type)
-            self.__nn_centers = tf.get_variable("centers",
-                                                initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count, center_dim)),
-                                                dtype=nn.type)
-            self.__nn_parameters = tf.get_variable("parameters", initializer=tf.constant(ps, dtype=nn.type,
-                                                   shape=(rbfs_count, parameters_count)), dtype=nn.type)
+            self.__nn_weights = tf.get_variable('weights', initializer=tf.constant(ws, dtype=nn.type, shape=(rbfs_count,)), dtype=nn.type)
+            self.__nn_centers = tf.get_variable('centers', initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count, center_dim)), dtype=nn.type)
+            self.__nn_parameters = tf.get_variable('parameters', initializer=tf.constant(ps, dtype=nn.type, shape=(rbfs_count, parameters_count)), dtype=nn.type)
 
         with tf.name_scope("model-compile-rbfs-creation"):
             # rbfs creation

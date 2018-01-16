@@ -19,26 +19,26 @@ class TestSolver(TestCase):
         """
         model = slv.Model()
         model.add_rbf(1, rbf_name='gaussian', center=[0], parameters=[1])
+        model.compile()
 
         problem = slv.Problem()
-
         problem.add_constrain('equation',
                               lambda y, x: y(x),
                               lambda x: tf.exp(-tf.pow(x - 2, 2) / 2))
+        problem.compile()
 
-        solver = slv.Solver(model=model, problem=problem)
-        solver.set_control_points('equation', 1, uniform_points_1d(-1, 3, 15))
+        loss = slv.LossFunction(problem=problem, model=model)
+        loss.set_control_points('equation', 1, uniform_points_1d(-1, 3, 15))
+        loss.compile()
 
+        solver = slv.Solver(loss_function=loss)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.2)
+        solver.compile(optimizer=optimizer, variables=[model.centers])
 
         with tf.Session() as s:
-            model.compile()
-            problem.compile()
-            solver.compile(optimizer=optimizer, variables=[model.centers])
-
             s.run(tf.global_variables_initializer())
 
-            res = s.run(solver.error, feed_dict=solver.feed_dict)
+            res = s.run(loss.error, feed_dict=loss.feed_dict)
             print(res)
 
             for i in range(100):
@@ -60,26 +60,26 @@ class TestSolver(TestCase):
         """
         model = slv.Model()
         model.add_rbf(1, rbf_name='gaussian', center=[0, 0], parameters=[1])
+        model.compile()
 
         problem = slv.Problem()
-
         problem.add_constrain('equation',
                               lambda y, x: y(x),
                               lambda x: tf.exp(-(tf.pow(x - 2, 2) + tf.pow(x - 2, 2)) / 2))
+        problem.compile()
 
-        solver = slv.Solver(model=model, problem=problem)
-        solver.set_control_points('equation', 1, uniform_points_2d(-1, 3, 25, -1, 3, 25))
+        loss = slv.LossFunction(model=model, problem=problem)
+        loss.set_control_points('equation', 1, uniform_points_2d(-1, 3, 25, -1, 3, 25))
+        loss.compile()
 
+        solver = slv.Solver(loss_function=loss)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.2)
+        solver.compile(optimizer=optimizer, variables=[model.centers])
 
         with tf.Session() as s:
-            model.compile()
-            problem.compile()
-            solver.compile(optimizer=optimizer, variables=[model.centers])
-
             s.run(tf.global_variables_initializer())
 
-            res = s.run(solver.error, feed_dict=solver.feed_dict)
+            res = s.run(loss.error, feed_dict=loss.feed_dict)
             print(res)
 
             for i in range(100):

@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 class Network(object):
     def __init__(self, rbfs):
         self._functions = rbfs

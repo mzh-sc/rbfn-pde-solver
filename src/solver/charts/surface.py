@@ -25,15 +25,18 @@ class Surface(object):
         self.__axes.cla()
 
         with tf.name_scope("chart-surface-z-values"):
-            self.__axes.plot_surface(self.__X, self.__Y,
-                tf.get_default_session().run(  # get z values in as a grid NxN
-                    tf.reshape(
-                        tf.map_fn(lambda x: self.__function(x),  # map_fn (N*N,2) to (N*N,1)
-                                  tf.stack(
-                                      (tf.reshape(self.__X, [-1]),  # (N,N) to (N*N). For ex. [[1, 2, 3], [1, 2, 3], [1, 2, 3]] -> [1, 2, 3, 1, 2, 3, 1, 2, 3]
-                                       tf.reshape(self.__Y, [-1])),  # (N,N) to (N*N). For ex. [[1, 1, 1], [2, 2, 2], [3, 3, 3]] -> [1, 1, 1, 2, 2, 2, 3, 3, 3]
-                                      axis=-1)),  # stack: (N*N,2) [[1, 1], [2, 1], [3, 1], [2, 1], [2, 2]...]
-                        shape=self.__X.shape)),  # (N*N,1) to (N, N)
+            #func = lambda x, y: tf.get_default_session().run(self.__function, feed_dict={self.__function.op.inputs[0]: [x, y]})
+            res = np.array([self.__function([x, y]) for (x, y) in zip(self.__X.ravel(), self.__Y.ravel())]).reshape(self.__X.shape)
+
+            self.__axes.plot_surface(self.__X, self.__Y, res,
+                # tf.get_default_session().run(  # get z values in as a grid NxN
+                #     tf.reshape(
+                #         tf.map_fn(lambda x: self.__function(x),  # map_fn (N*N,2) to (N*N,1)
+                #                   tf.stack(
+                #                       (tf.reshape(self.__X, [-1]),  # (N,N) to (N*N). For ex. [[1, 2, 3], [1, 2, 3], [1, 2, 3]] -> [1, 2, 3, 1, 2, 3, 1, 2, 3]
+                #                        tf.reshape(self.__Y, [-1])),  # (N,N) to (N*N). For ex. [[1, 1, 1], [2, 2, 2], [3, 3, 3]] -> [1, 1, 1, 2, 2, 2, 3, 3, 3]
+                #                       axis=-1)),  # stack: (N*N,2) [[1, 1], [2, 1], [3, 1], [2, 1], [2, 2]...]
+                #         shape=self.__X.shape)),  # (N*N,1) to (N, N)
                                       cmap=cm.coolwarm,
                                       linewidth=0,
                                       antialiased=False)

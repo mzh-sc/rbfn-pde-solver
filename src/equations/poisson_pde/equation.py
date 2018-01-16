@@ -1,74 +1,50 @@
 from datetime import datetime
 
-import math
+from tensorflow.python.saved_model import tag_constants
+
+from equations.poisson_pde.create_model1 import MODEL_NAME, DATA_DIR, TransientModel
+
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from tensorflow.contrib.opt import ScipyOptimizerInterface
-
 import solver as ps
-import numpy as np
 import solver.charts as charts
 
 logdir = "C:/tf_logs/run-{}/".format(datetime.utcnow().strftime("%Y%m%d%H%M%S"))
 
-# model
-rbfs_count = 5
-
-
-# model creation
-model = ps.Model()
-for (w, c, a) in zip(np.ones(rbfs_count),
-                     ps.random_points_2d(-0.1, 1.1, -0.1, 1.1, rbfs_count),
-                     np.ones(rbfs_count)):
-    model.add_rbf(w, 'gaussian', c, parameters=[a])
-model.compile()
-
-# problem
-problem = ps.Problem()
-
-def equation(y, x):
-    h = tf.hessians(y(x), x)[0]
-    return h[0][0] + h[1][1]
-
-# todo: [opt] don't use tf. Precalculate them?
-# the problem equations
-problem.add_constrain('equation',
-                      equation,
-                      lambda x: tf.sin(math.pi * x[0]) * tf.sin(math.pi * x[1]))
-problem.add_constrain('bc1',
-                      lambda y, x: y(x),
-                      lambda x: 0)
-problem.compile()
-
-# solver
-solver = ps.Solver(problem, model)
-solver.set_control_points('equation', 1,
-                          ps.uniform_points_2d(0.1, 0.9, 6, 0.1, 0.9, 6))
-solver.set_control_points('bc1', 100,
-                          ps.uniform_points_2d(0, 1, 10, 0, 0, 1) +
-                          ps.uniform_points_2d(0, 1, 10, 1, 1, 1) +
-                          ps.uniform_points_2d(0, 0, 1, 0, 1, 10) +
-                          ps.uniform_points_2d(1, 1, 1, 0, 1, 10))
-
-solver.compile(optimizer=tf.train.GradientDescentOptimizer(0.1),
-               variables=[model.weights, model.centers, model.parameters],
-               metrics=['error'])
-
-fig = plt.figure()
-plt.ion()
-plt.draw()
-
-error_plot = charts.Error(fig, 121)
-nn_surface = charts.Surface(fig, 122,
-                            x0=0, x1=1, x_count=25,
-                            y0=0, y1=1, y_count=25,
-                            function=model.network.y)
-
-# file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())
-# file_writer.close()
-
 with tf.Session() as s:
-    s.run(tf.global_variables_initializer())
+    # applicable when using saver without import_meta_graph
+    # weights = tf.Variable(0.0, dtype=nn.type, validate_shape=False, name=ps.Model.WEIGHTS)
+    # centers = tf.Variable(0.0, dtype=nn.type, validate_shape=False, name=ps.Model.CENTERS)
+    # parameters = tf.Variable(0.0, dtype=nn.type, validate_shape=False, name=ps.Model.PARAMETERS)
+
+    saver = tf.train.import_meta_graph('{}/{}.meta'.format(DATA_DIR, MODEL_NAME))
+    saver.restore(s, tf.train.latest_checkpoint(DATA_DIR))
+
+    tm = TransientModel.restore()
+
+    loss = tm.op_loss
+    model_y = tm.op_model_y
+
+    # solver
+    solver = ps.Solver(loss_function=loss)
+    solver.compile(optimizer=tf.train.GradientDescentOptimizer(0.1),
+                   variables=[tm.vr_weights, tm.vr_centers, tm.vr_parameters],
+                   metrics=['error'])
+
+    fig = plt.figure()
+    plt.ion()
+    plt.draw()
+
+    error_plot = charts.Error(fig, 121)
+    nn_surface = charts.Surface(fig, 122,
+                                x0=0, x1=1, x_count=25,
+                                y0=0, y1=1, y_count=25,
+                                function=lambda x: s.run(model_y, feed_dict={tm.pl_x_of_y: x}))
+
+    # file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())
+    # file_writer.close()
+
+    #s.run(tf.global_variables_initializer())
 
     i = 0
     while True:
