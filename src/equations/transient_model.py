@@ -9,6 +9,7 @@ def restore_transient_model():
         vr_centers=tf_ext.get_variable('centers'),
         vr_parameters=tf_ext.get_variable('parameters'),
         op_loss=tf.get_collection('op_loss')[0],
+        pls_control_points=tf.get_collection('pls_control_points'),
         op_model_y=tf.get_collection('op_model_y')[0],
         pl_x_of_y=tf.get_collection('pl_x_of_y')[0]
     )
@@ -18,6 +19,8 @@ def store_transient_model(model):
     tf.add_to_collection('vr_centers', model.vr_centers)
     tf.add_to_collection('vr_parameters', model.vr_parameters)
     tf.add_to_collection('op_loss', model.op_loss)
+    for e in model.pls_control_points:
+        tf.add_to_collection('pls_control_points', e)
     tf.add_to_collection('op_model_y', model.op_model_y)
     tf.add_to_collection('pl_x_of_y', model.pl_x_of_y)
 
@@ -27,6 +30,7 @@ TransientModel = namedtuple('TransientModel',
                                 'vr_centers',
                                 'vr_parameters',
                                 'op_loss',
+                                'pls_control_points',
                                 'op_model_y',
                                 'pl_x_of_y'
                             ])

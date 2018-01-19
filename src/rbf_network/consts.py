@@ -1,3 +1,3 @@
 import tensorflow as tf
 
-type = tf.float64
+type = tf.float32

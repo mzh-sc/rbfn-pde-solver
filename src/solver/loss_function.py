@@ -6,10 +6,9 @@ class LossFunction(object):
     def __init__(self, problem, model):
         self.__problem = problem
         self.__model = model
-        self.__constrain_control_points = {}
-        self.__constrain_control_points_weights = {}
+        self.__constrain_weights = {}
 
-        self.__feed_dict = {}
+        self.__feed_placeholders_dict = {}
         self.__error = None
 
     @property
@@ -21,42 +20,43 @@ class LossFunction(object):
         return self.__error
 
     @property
-    def feed_dict(self):
+    def feed_placeholders_dict(self):
         """
 
         :return: aggregated over all control points feed dictionary
         """
-        return self.__feed_dict
+        return self.__feed_placeholders_dict
 
-    def set_control_points(self, constrain_name, weight, points):
+    def set_constrain_weight(self, constrain_name, weight):
         """
 
         :param constrain_name:
         :param weight:
-        :param points: the list of control points [[dim], [dim],...]. For ex.: [[1.0], [2.0]...], [[1.0, 1.0], [2.0, 1.0]...]
         :return:
         """
         if constrain_name not in self.__problem.constrains:
             raise ValueError(constrain_name)
 
-        self.__constrain_control_points_weights[constrain_name] = weight
-        self.__constrain_control_points[constrain_name] = points
+        self.__constrain_weights[constrain_name] = weight
 
     def compile(self):
-        self.__feed_dict = {}
+        self.__feed_placeholders_dict = {}
 
         control_points_errors = []
-        for constrain_name in self.__constrain_control_points.keys():
+        for constrain_name in self.__constrain_weights.keys():
             with tf.name_scope("solver-compile-constrain-{}".format(constrain_name)):
                 constrain = self.__problem.constrains[constrain_name]
-                alpha = self.__constrain_control_points_weights[constrain_name]
-                train_points = self.__constrain_control_points[constrain_name]
+                alpha = self.__constrain_weights[constrain_name]
 
                 # todo: use placeholder in the future.
-                xs = tf.constant(train_points, dtype=nn.type, shape=(len(train_points), len(train_points[0])))
+                # xs = tf.constant(train_points, dtype=nn.type, shape=(len(train_points), len(train_points[0])))
 
-                #xs = tf.placeholder( dtype=nn.type, shape=(len(train_points), len(train_points[0])))
-                #self.__feed_dict[xs] = train_points
+                # initial implementation
+                # xs = tf.placeholder( dtype=nn.type, shape=(len(train_points), len(train_points[0])))
+                # self.__feed_dict[xs] = train_points
+
+                xs = tf.placeholder(dtype=nn.type, shape=(None, constrain.x_dim))
+                self.__feed_placeholders_dict[constrain_name] = xs
 
                 # optimized using bulk computation (see: map_fn in TestTensorflow.test_try_hessian and equation)
                 # for index in range(len(train_points)):

@@ -3,6 +3,7 @@ from unittest import TestCase
 import solver as slv
 import tensorflow as tf
 import numpy as np
+import rbf_network as rbf
 
 from solver import uniform_points_1d, uniform_points_2d
 
@@ -24,25 +25,28 @@ class TestSolver(TestCase):
         problem = slv.Problem()
         problem.add_constrain('equation',
                               lambda y, x: y(x),
-                              lambda x: tf.exp(-tf.pow(x - 2, 2) / 2))
+                              lambda x: tf.exp(-tf.pow(x - 2, 2) / 2),
+                              1)
         problem.compile()
 
         loss = slv.LossFunction(problem=problem, model=model)
-        loss.set_control_points('equation', 1, uniform_points_1d(-1, 3, 15))
+        loss.set_constrain_weight('equation', 1)
         loss.compile()
 
-        solver = slv.Solver(loss_function=loss)
+        solver = slv.Solver(loss_function=loss.error)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.2)
         solver.compile(optimizer=optimizer, variables=[model.centers])
 
+        feed_dict = {next(iter(loss.feed_placeholders_dict.values())):
+                         np.array(uniform_points_1d(-1.0, 3.0, 15), dtype=rbf.type.as_numpy_dtype())}
         with tf.Session() as s:
             s.run(tf.global_variables_initializer())
 
-            res = s.run(loss.error, feed_dict=loss.feed_dict)
+            res = s.run(loss.error, feed_dict=feed_dict)
             print(res)
 
             for i in range(100):
-                error = solver.fit()
+                error = solver.fit(feed_dict=feed_dict)
                 print(error)
 
             print(model.weights.eval())
@@ -65,25 +69,28 @@ class TestSolver(TestCase):
         problem = slv.Problem()
         problem.add_constrain('equation',
                               lambda y, x: y(x),
-                              lambda x: tf.exp(-(tf.pow(x - 2, 2) + tf.pow(x - 2, 2)) / 2))
+                              lambda x: tf.exp(-(tf.pow(x - 2, 2) + tf.pow(x - 2, 2)) / 2),
+                              2)
         problem.compile()
 
         loss = slv.LossFunction(model=model, problem=problem)
-        loss.set_control_points('equation', 1, uniform_points_2d(-1, 3, 25, -1, 3, 25))
+        loss.set_constrain_weight('equation', 1)
         loss.compile()
 
-        solver = slv.Solver(loss_function=loss)
+        solver = slv.Solver(loss_function=loss.error)
         optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.2)
         solver.compile(optimizer=optimizer, variables=[model.centers])
 
+        feed_dict = {next(iter(loss.feed_placeholders_dict.values())):
+                         np.array(uniform_points_2d(-1, 3, 25, -1, 3, 25), dtype=rbf.type.as_numpy_dtype())}
         with tf.Session() as s:
             s.run(tf.global_variables_initializer())
 
-            res = s.run(loss.error, feed_dict=loss.feed_dict)
+            res = s.run(loss.error, feed_dict=feed_dict)
             print(res)
 
             for i in range(100):
-                error = solver.fit()
+                error = solver.fit(feed_dict=feed_dict)
                 print(error)
 
             print(model.weights.eval())

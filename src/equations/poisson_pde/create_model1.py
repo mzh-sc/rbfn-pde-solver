@@ -33,21 +33,18 @@ def create_model1():
     # the problem equations
     problem.add_constrain('equation',
                           equation,
-                          lambda x: tf.sin(math.pi * x[0]) * tf.sin(math.pi * x[1]))
+                          lambda x: tf.sin(math.pi * x[0]) * tf.sin(math.pi * x[1]),
+                          2)
     problem.add_constrain('bc1',
                           lambda y, x: y(x),
-                          lambda x: 0)
+                          lambda x: 0,
+                          2)
     problem.compile()
 
     # loss
     loss = ps.LossFunction(problem, model)
-    loss.set_control_points('equation', 1,
-                            ps.uniform_points_2d(0.1, 0.9, 6, 0.1, 0.9, 6))
-    loss.set_control_points('bc1', 100,
-                            ps.uniform_points_2d(0, 1, 10, 0, 0, 1) +
-                            ps.uniform_points_2d(0, 1, 10, 1, 1, 1) +
-                            ps.uniform_points_2d(0, 0, 1, 0, 1, 10) +
-                            ps.uniform_points_2d(1, 1, 1, 0, 1, 10))
+    loss.set_constrain_weight('equation', 1)
+    loss.set_constrain_weight('bc1', 100)
     loss.compile()
 
     saver = tf.train.Saver()
@@ -61,6 +58,7 @@ def create_model1():
             vr_parameters=model.parameters,
             vr_centers=model.centers,
             op_loss=loss.error,
+            pls_control_points=loss.feed_placeholders_dict.values(),
             op_model_y=y,
             pl_x_of_y=x))
 

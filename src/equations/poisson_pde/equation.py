@@ -31,6 +31,13 @@ with tf.Session() as s:
                    variables=[tm.vr_weights, tm.vr_centers, tm.vr_parameters],
                    metrics=['error'])
 
+    feed_dict = {}
+    feed_dict[tm.pls_control_points[0]] = ps.uniform_points_2d(0.1, 0.9, 6, 0.1, 0.9, 6)
+    feed_dict[tm.pls_control_points[1]] = ps.uniform_points_2d(0, 1, 10, 0, 0, 1) + \
+                                ps.uniform_points_2d(0, 1, 10, 1, 1, 1) + \
+                                ps.uniform_points_2d(0, 0, 1, 0, 1, 10) + \
+                                ps.uniform_points_2d(1, 1, 1, 0, 1, 10)
+
     fig = plt.figure()
     plt.ion()
     plt.draw()
@@ -48,7 +55,7 @@ with tf.Session() as s:
 
     i = 0
     while True:
-        error = solver.fit()
+        error = solver.fit(feed_dict=feed_dict)
         error_plot.add_error(error)
 
         print(error)
