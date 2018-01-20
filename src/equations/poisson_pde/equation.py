@@ -1,42 +1,28 @@
-from datetime import datetime
-
-from tensorflow.python.saved_model import tag_constants
-
-from equations.poisson_pde.create_model1 import MODEL_NAME, DATA_DIR, TransientModel
-
 import matplotlib.pyplot as plt
-import tensorflow as tf
-import solver as ps
 import solver.charts as charts
 
-logdir = "C:/tf_logs/run-{}/".format(datetime.utcnow().strftime("%Y%m%d%H%M%S"))
+from equations.poisson_pde.create_model_graph import *
+from equations.solution import Solution
 
+
+DATA_DIR = './data'
+MODEL_NAME = 'model'
+MODEL_PATH = '{}/{}'.format(DATA_DIR, MODEL_NAME)
+
+if not ckeck_if_model_graph_exists(DATA_DIR, MODEL_NAME):
+    create_model_graph(DATA_DIR, MODEL_NAME)
+    
 with tf.Session() as s:
-    # applicable when using saver without import_meta_graph
-    # weights = tf.Variable(0.0, dtype=nn.type, validate_shape=False, name=ps.Model.WEIGHTS)
-    # centers = tf.Variable(0.0, dtype=nn.type, validate_shape=False, name=ps.Model.CENTERS)
-    # parameters = tf.Variable(0.0, dtype=nn.type, validate_shape=False, name=ps.Model.PARAMETERS)
-
-    saver = tf.train.import_meta_graph('{}/{}.meta'.format(DATA_DIR, MODEL_NAME))
+    saver = tf.train.import_meta_graph(MODEL_PATH + '.meta')
     saver.restore(s, tf.train.latest_checkpoint(DATA_DIR))
 
-    tm = TransientModel.restore()
+    soultion = Solution.load()
 
-    loss = tm.op_loss
-    model_y = tm.op_model_y
-
-    # solver
-    solver = ps.Solver(loss_function=loss)
-    solver.compile(optimizer=tf.train.GradientDescentOptimizer(0.1),
-                   variables=[tm.vr_weights, tm.vr_centers, tm.vr_parameters],
-                   metrics=['error'])
-
-    feed_dict = {}
-    feed_dict[tm.pls_control_points[0]] = ps.uniform_points_2d(0.1, 0.9, 6, 0.1, 0.9, 6)
-    feed_dict[tm.pls_control_points[1]] = ps.uniform_points_2d(0, 1, 10, 0, 0, 1) + \
+    feed_dict = {EQUATION_CONSTRAIN: ps.uniform_points_2d(0.1, 0.9, 6, 0.1, 0.9, 6),
+                 BC1_CONSTRAIN: ps.uniform_points_2d(0, 1, 10, 0, 0, 1) + \
                                 ps.uniform_points_2d(0, 1, 10, 1, 1, 1) + \
                                 ps.uniform_points_2d(0, 0, 1, 0, 1, 10) + \
-                                ps.uniform_points_2d(1, 1, 1, 0, 1, 10)
+                                ps.uniform_points_2d(1, 1, 1, 0, 1, 10)}
 
     fig = plt.figure()
     plt.ion()
@@ -46,16 +32,11 @@ with tf.Session() as s:
     nn_surface = charts.Surface(fig, 122,
                                 x0=0, x1=1, x_count=25,
                                 y0=0, y1=1, y_count=25,
-                                function=lambda x: s.run(model_y, feed_dict={tm.pl_x_of_y: x}))
+                                function=lambda x: soultion.y(x))
 
-    # file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())
-    # file_writer.close()
-
-    #s.run(tf.global_variables_initializer())
-
-    i = 0
+    i = 1
     while True:
-        error = solver.fit(feed_dict=feed_dict)
+        error = soultion.fit(feed_dict=feed_dict)
         error_plot.add_error(error)
 
         print(error)
@@ -67,6 +48,7 @@ with tf.Session() as s:
             plt.draw()
             plt.pause(0.005)
 
+            saver.save(s, MODEL_PATH, global_step=i, write_meta_graph=False)
         i += 1
 
 # ---- external ----
