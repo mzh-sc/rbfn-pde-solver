@@ -29,7 +29,7 @@ class Solution(object):
     def save(solution):
         tf.add_to_collection('op_loss', solution.__loss)
         tf.add_to_collection('op_minimize', solution.__minimize)
-        for pl in solution.__constrain_placeholders.values():
+        for pl in solution.__constrain_placeholders:
             tf.add_to_collection('pl_constrain', pl)
 
         tf.add_to_collection('op_y', solution.__y)
@@ -45,10 +45,28 @@ class Solution(object):
 
         solution.__loss = loss.value
         solution.__minimize = optimizer.minimize
-        solution.__constrain_placeholders = list(loss.constrain_placeholders_dict)
+        solution.__constrain_placeholders = list(loss.constrain_placeholders_dict.values())
 
         solution.__x = tf.placeholder(dtype=nn.type, shape=(2,))
         solution.__y = tf.identity(model.network.y(solution.__x))
+
+        return solution
+
+    @property
+    def weights(self):
+        return self.__weights
+
+    @property
+    def centers(self):
+        return self.__centers
+
+    @property
+    def parameters(self):
+        return self.__parameters
+
+    @property
+    def loss(self):
+        return self.__loss
 
     def __init__(self):
         self.__weights = None
@@ -70,10 +88,10 @@ class Solution(object):
         return self.error(feed_dict)
 
     def minimize(self, feed_dict):
-        tf.get_default_session().run(self.__minimize, feed_dict=self.__constrain_feed_dict(feed_dict))
+        tf.get_default_session().run(self.__minimize, feed_dict=self.constrain_feed_dict(feed_dict))
 
     def error(self, feed_dict):
-        return tf.get_default_session().run(self.__loss, feed_dict=self.__constrain_feed_dict(feed_dict))
+        return tf.get_default_session().run(self.__loss, feed_dict=self.constrain_feed_dict(feed_dict))
 
-    def __constrain_feed_dict(self, feed_dict):
+    def constrain_feed_dict(self, feed_dict):
         return {self.__constrain_placeholders[k]: v for (k, v) in feed_dict.items()}

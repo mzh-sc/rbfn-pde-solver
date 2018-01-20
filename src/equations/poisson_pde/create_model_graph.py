@@ -17,8 +17,10 @@ def ckeck_if_model_graph_exists(model_dir, model_name):
     return Path(model_dir + '/' + model_name + '.meta').exists()
 
 def create_model_graph(model_dir, model_name, write_graph_log=False):
+    Path(model_dir).mkdir(exist_ok=True)
+
     # model
-    rbfs_count = 5
+    rbfs_count = 16
 
     model = ps.Model()
     for (w, c, a) in zip(np.ones(rbfs_count),
