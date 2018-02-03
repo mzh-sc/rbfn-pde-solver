@@ -1,4 +1,4 @@
-from unittest import TestCase
+import unittest
 from collections import Iterable
 
 import tensorflow as tf
@@ -6,49 +6,44 @@ import math as math
 import rbf_network as rbfn
 
 
-class TestNetwork(TestCase):
+class TestNetwork(unittest.TestCase):
     def test_y_1d(self):
-        rbf1 = rbfn.Gaussian()
-        rbf1.center = tf.Variable([1.5], dtype=tf.float64)
-        rbf1.parameters = tf.Variable(1.0, dtype=tf.float64)
+        rbf = rbfn.Gaussian()
 
-        rbf2 = rbfn.Gaussian()
-        rbf2.center = tf.Variable([1.2], dtype=tf.float64)
-        rbf2.parameters = tf.Variable(0.1, dtype=tf.float64)
-
-        nn = rbfn.Network([rbf1, rbf2])
+        nn = rbfn.Network(rbf)
         nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
+        nn.centers = tf.Variable([[1.5], [1.2]], dtype=tf.float64)
+        nn.parameters = tf.Variable([[1.0], [0.1]], dtype=tf.float64)
 
         with tf.Session() as s:
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(dtype=tf.float64, shape=(1,))
-            self.assertEqual(s.run(nn.y(x), {x: [1.0]}),
+            self.assertEqual(s.run(nn.y(x, tf.float64), {x: [1.0]}),
                              1.0 * math.exp(-(1.0 - 1.5)**2 / (2 * 1.0**2)) +
                              0.5 * math.exp(-(1.0 - 1.2)**2 / (2 * 0.1**2)))
 
     def test_y_2d(self):
-        rbf1 = rbfn.Gaussian()
-        rbf1.center = tf.Variable([1.5, 2], dtype=tf.float64)
-        rbf1.parameters = tf.Variable(1.0, dtype=tf.float64)
+        rbf = rbfn.Gaussian()
 
-        rbf2 = rbfn.Gaussian()
-        rbf2.center = tf.Variable([1.2, 1.1], dtype=tf.float64)
-        rbf2.parameters = tf.Variable(0.1, dtype=tf.float64)
-
-        nn = rbfn.Network([rbf1, rbf2])
+        nn = rbfn.Network(rbf)
         nn.weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
+        nn.centers = tf.Variable([[1.5, 2], [1.2, 1.1]], dtype=tf.float64)
+        nn.parameters = tf.Variable([[1.0], [0.1]], dtype=tf.float64)
 
         with tf.Session() as s:
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(dtype=tf.float64, shape=(2,))
-            self.assertEqual(s.run(nn.y(x), {x: [1.0, 2.0]}),
+            self.assertEqual(s.run(nn.y(x, tf.float64), {x: [1.0, 2.0]}),
                              1.0 * math.exp(-((1.0 - 1.5) ** 2 + (2.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
                              0.5 * math.exp(-((1.0 - 1.2) ** 2 + (2.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
 
+    @unittest.skip
     def test_variables_aggregation(self):
         """
+        Skipped as not relevant any more
+
         The purpose is not to use flatter to get gradient vector, i.e. iso
             [[dw1, dw2,...], [rbf1.c1, rbf1.c2], rbf1.a, [rbf1.c1, rbf1.c2], rbf1.a,... ]
             to get
@@ -130,5 +125,35 @@ class TestNetwork(TestCase):
             self.assertEqual(len(res_gradient[0]), 2)
             self.assertEqual(len(res_gradient[1]), 4)
 
+    def test_gradient(self):
+        with tf.Session() as s:
+            rbf = rbfn.Gaussian()
+
+            # aggregated weights and parameters
+            weights = tf.Variable([1.0, 0.5], dtype=tf.float64)
+            centers = tf.Variable([[1.5], [1.2]], dtype=tf.float64)
+            parameters = tf.Variable([[1.0], [0.1]], dtype=tf.float64)
+
+            # splitting
+
+            nn = rbfn.Network(rbf)
+            nn.weights = weights
+            nn.centers = centers
+            nn.parameters = parameters
+
+            s.run(tf.global_variables_initializer())
+
+            x = tf.placeholder(dtype=tf.float64, shape=(1,))
+            self.assertEqual(s.run(nn.y(x, dtype=tf.float64), {x: [1.0]}),
+                             1.0 * math.exp(-(1.0 - 1.5)**2 / (2 * 1.0**2)) +
+                             0.5 * math.exp(-(1.0 - 1.2)**2 / (2 * 0.1**2)))
+
+            # now we can use aggregated weights and params
+            gradient = tf.gradients(nn.y(x, dtype=tf.float64), [weights, parameters, centers],)
+            res_gradient = s.run(gradient, {x: [1.0]});
+            self.assertEqual(len(res_gradient), 3)
+            self.assertEqual(len(res_gradient[0]), 2)
+            self.assertEqual(len(res_gradient[1]), 2)
+            self.assertEqual(len(res_gradient[1]), 2)
 
 

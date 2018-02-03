@@ -16,34 +16,35 @@ class TestGaussianFunction(TestCase):
             f = rbfn.Gaussian()
 
             # case 1d
-            f.center = tf.Variable([1.5])  # [1.5], constant is ok
-            f.parameters = tf.Variable([1.0])
+            center = tf.Variable([1.5])  # [1.5], constant is ok
+            parameters = tf.Variable([1.0])
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(rbfn.type, shape=(1,))
-            self.assertAlmostEqual(s.run(f.y(x), {x: [2.5]}), math.exp(-(2.5 - 1.5) ** 2 / (2 * 1 ** 2)),
+            self.assertAlmostEqual(s.run(f.y(x, center, parameters), {x: [2.5]}), math.exp(-(2.5 - 1.5) ** 2 / (2 * 1 ** 2)),
                                    delta=self.delta)
 
             # case 2d
-            f.center = tf.Variable([1.5, 2.5])
-            f.parameters = tf.Variable([1.2])
+            center = tf.Variable([1.5, 2.5])
+            parameters = tf.Variable([1.2])
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(rbfn.type, shape=(2,))
-            self.assertAlmostEqual(s.run(f.y(x), {x: [2.5, 2.3]}), math.exp(-((2.5 - 1.5) ** 2 + (2.3 - 2.5) ** 2)
+            self.assertAlmostEqual(s.run(f.y(x, center, parameters), {x: [2.5, 2.3]}), math.exp(-((2.5 - 1.5) ** 2 + (2.3 - 2.5) ** 2)
                                                                             / (2 * 1.2 ** 2)), delta=self.delta)
 
     def test_y_gradient(self):
         with tf.Session() as s:
             f = rbfn.Gaussian()
-            f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)  # float32 e-8 precision
-            f.parameters = tf.Variable(1.2, dtype=tf.float64)
+
+            center = tf.Variable([1.5, 2.5], dtype=tf.float64)  # float32 e-8 precision
+            parameters = tf.Variable(1.2, dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(tf.float64, shape=(2,))
 
-            gradient = tf.gradients(f.y(x), [f.center, f.parameters])
+            gradient = tf.gradients(f.y(x, center, parameters), [center, parameters])
 
             y = math.exp(-((2.5 - 1.5) ** 2 + (2.3 - 2.5) ** 2) / (2 * 1.2 ** 2))
             self.assertSequenceEqual(list(utils.flatten(s.run(gradient, {x: [2.5, 2.3]}))),
@@ -58,19 +59,20 @@ class TestGaussianFunction(TestCase):
         """
         with tf.Session() as s:
             f = rbfn.Gaussian()
-            f.center = tf.Variable([1.5, 2.5], dtype=tf.float64)
-            f.parameters = tf.Variable(1.2, dtype=tf.float64)
+
+            center = tf.Variable([1.5, 2.5], dtype=tf.float64)
+            parameters = tf.Variable(1.2, dtype=tf.float64)
 
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(tf.float64, shape=(2,))
 
-            gradient = tf.gradients(f.y(x), [f.center, f.parameters])
+            gradient = tf.gradients(f.y(x, center, parameters), [center, parameters])
 
             duration(lambda: s.run(gradient, {x: [2.5, 2.3]}))
             duration(lambda: s.run(gradient, {x: [0.8, 0.3]}))
 
-            s.run(f.center.assign([1.4, 1.2]))
+            s.run(center.assign([1.4, 1.2]))
             duration(lambda: s.run(gradient, {x: [0.8, 0.3]}))
 
             duration(lambda: [TestGaussianFunction.__dydc1(1.5, 2.5, 1.2, 2.5, 2.3),

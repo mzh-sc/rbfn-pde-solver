@@ -11,7 +11,7 @@ MODEL_NAME = 'model'
 MODEL_PATH = '{}/{}'.format(DATA_DIR, MODEL_NAME)
 
 if not ckeck_if_model_graph_exists(DATA_DIR, MODEL_NAME):
-    create_model_graph(DATA_DIR, MODEL_NAME)
+    create_model_graph(DATA_DIR, MODEL_NAME, True)
 
 with tf.Session() as s:
     saver = tf.train.import_meta_graph(MODEL_PATH + '.meta')

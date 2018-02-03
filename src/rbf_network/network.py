@@ -1,21 +1,14 @@
 import tensorflow as tf
+from rbf_network.consts import type
 
 
 class Network(object):
-    def __init__(self, rbfs):
-        self._functions = rbfs
+    def __init__(self, rbf):
+        self._function = rbf.y
         self.weights = None
-
-    @property
-    def _dimention(self):
-        return self._functions[0].dimention if self._functions else 0
+        self.centers = None
+        self.parameters = None
 
     def y(self, x):
-        if len(x.shape) not in (1, 2) or x.shape[0] != self._dimention:
-            raise Exception("Unexpected shape {}. The current implementation can handle "
-                            "either (:,dim) or (dim) shapes only".format(x.shape))
         with tf.name_scope("rbfn-value"):
-            return tf.reduce_sum(self.weights * tf.stack([e.y(x) for e in self]))
-
-    def __iter__(self):
-        return iter(self._functions)
+            return tf.reduce_sum(self.weights * self._function(x, self.centers, self.parameters))

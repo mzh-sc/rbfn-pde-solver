@@ -20,7 +20,7 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
     Path(model_dir).mkdir(exist_ok=True)
 
     # model
-    rbfs_count = 16
+    rbfs_count = 15
 
     model = ps.Model()
     for (w, c, a) in zip(np.ones(rbfs_count),
@@ -32,6 +32,13 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
 
     # problem
     problem = ps.Problem()
+
+    def hessian(y, x):
+        h = tf.hessians(y, x)[0]
+        return h[0][0] + h[1][1]
+
+    def equation(y, x):
+        return y(x, lambda _y: hessian(_y, x))
 
     def equation(y, x):
         h = tf.hessians(y(x), x)[0]
