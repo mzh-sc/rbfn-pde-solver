@@ -144,12 +144,12 @@ class TestNetwork(unittest.TestCase):
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(dtype=tf.float64, shape=(1,))
-            self.assertEqual(s.run(nn.y(x, dtype=tf.float64), {x: [1.0]}),
+            self.assertEqual(s.run(nn.y(x), {x: [1.0]}),
                              1.0 * math.exp(-(1.0 - 1.5)**2 / (2 * 1.0**2)) +
                              0.5 * math.exp(-(1.0 - 1.2)**2 / (2 * 0.1**2)))
 
             # now we can use aggregated weights and params
-            gradient = tf.gradients(nn.y(x, dtype=tf.float64), [weights, parameters, centers],)
+            gradient = tf.gradients(nn.y(x), [weights, parameters, centers],)
             res_gradient = s.run(gradient, {x: [1.0]});
             self.assertEqual(len(res_gradient), 3)
             self.assertEqual(len(res_gradient[0]), 2)

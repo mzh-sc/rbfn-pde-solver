@@ -44,6 +44,12 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
         h = tf.hessians(y(x), x)[0]
         return h[0][0] + h[1][1]
 
+    def equation(y, x):
+        grad = tf.gradients(y(x), x)[0]
+        dx1 = grad[0]
+        dx2 = grad[1]
+        return tf.gradients(dx1, x)[0][0] + tf.gradients(dx2, x)[0][1]
+
     # todo: [opt] don't use tf. Precalculate them?
     # the problem equations
     problem.add_constrain(EQUATION_CONSTRAIN,

@@ -171,3 +171,19 @@ class TestTensorflow(TestCase):
         with tf.Session() as s:
             print(s.run(op(x[:, 0] + x[:, 1],
                         feed_dict= { x: [[1, 2], [3, 4], [0, 0]] })))
+
+    def test_hessian(self):
+        x = tf.placeholder(dtype=tf.float64, shape=(2,))
+        #y = tf.reduce_sum(tf.map_fn(lambda e: e * e, x))
+        y =  0.2 * x[0] * x[0] * x[1] + x[1] * x[1] * x[0]
+        #i = tf.constant(0)
+        #r = tf.constant(0, dtype=tf.float64)
+        #y = tf.while_loop(lambda r, i: i < 2, lambda r, i: (r + x[i] * x[i], i + 1), [r, i])
+        with tf.Session() as s:
+            print('hessian %s' % s.run(tf.hessians(y, x)[0], feed_dict={x: [2, 1]}))
+            grad = tf.gradients(y, x)[0]
+            dx1 = grad[0]
+            dx2 = grad[1]
+            print('gr(gr) %s' % s.run(tf.gradients(dx1, x)[0][0], feed_dict={x: [2, 1]}))
+            print('gr(gr) %s' % s.run(tf.gradients(dx2, x)[0][1], feed_dict={x: [2, 1]}))
+            #print('gr(gr) %s' % s.run(tf.gradients(tf.gradients(y, x[1]), x[1]), feed_dict={x: [2, 1]}))
