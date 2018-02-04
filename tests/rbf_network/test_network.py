@@ -19,7 +19,7 @@ class TestNetwork(unittest.TestCase):
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(dtype=tf.float64, shape=(1,))
-            self.assertEqual(s.run(nn.y(x, tf.float64), {x: [1.0]}),
+            self.assertEqual(s.run(nn.y(x), {x: [1.0]}),
                              1.0 * math.exp(-(1.0 - 1.5)**2 / (2 * 1.0**2)) +
                              0.5 * math.exp(-(1.0 - 1.2)**2 / (2 * 0.1**2)))
 
@@ -35,7 +35,7 @@ class TestNetwork(unittest.TestCase):
             s.run(tf.global_variables_initializer())
 
             x = tf.placeholder(dtype=tf.float64, shape=(2,))
-            self.assertEqual(s.run(nn.y(x, tf.float64), {x: [1.0, 2.0]}),
+            self.assertEqual(s.run(nn.y(x), {x: [1.0, 2.0]}),
                              1.0 * math.exp(-((1.0 - 1.5) ** 2 + (2.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
                              0.5 * math.exp(-((1.0 - 1.2) ** 2 + (2.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
 

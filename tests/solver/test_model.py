@@ -33,8 +33,6 @@ class TestModel(TestCase):
 
             self.assertFalse(model.network is None)
             np.testing.assert_almost_equal(model.network.weights.eval().tolist(), [1, 2.5])
-            self.assertEqual(len(model.network._functions), 2)
+            np.testing.assert_almost_equal(model.network.centers.eval().tolist(), [[1, 0.4], [1.2, 2.3]])
+            np.testing.assert_almost_equal(model.network.parameters.eval().tolist(), [[1], [0.5]])
 
-            rbf1 = next(iter(model.network))
-            np.testing.assert_almost_equal(rbf1.center.eval().tolist(), [1, 0.4])
-            np.testing.assert_almost_equal(rbf1.parameters.eval().tolist(), [1])
