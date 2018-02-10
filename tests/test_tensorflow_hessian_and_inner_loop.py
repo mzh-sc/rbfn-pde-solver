@@ -42,11 +42,11 @@ class TestTensorflowHessianAndInnerLoop(ut.TestCase):
 
         with tf.Session() as s:
             tf.initialize_all_variables()
-            # note!!!, somehow it works for external optimizers
+            # not supported now. see https://github.com/tensorflow/tensorflow/issues/15219
             # print('hessian %s' % s.run(tf.hessians(y, p)[0], feed_dict={x: [2, 1]}))
             # print('hessian %s' % s.run(tf.hessians(y, x)[0], feed_dict={x: [2, 1]}))
 
-            # note!!!, somehow it works for external optimizers
+            # not supported now. see https://github.com/tensorflow/tensorflow/issues/15219
             with self.assertRaisesRegex(TypeError, "Second-order gradient for while loops not supported."):
                 grad = tf.gradients(y, x)[0]
                 dx1 = grad[0]

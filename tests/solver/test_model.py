@@ -36,3 +36,24 @@ class TestModel(TestCase):
             np.testing.assert_almost_equal(model.network.centers.eval().tolist(), [[1, 0.4], [1.2, 2.3]])
             np.testing.assert_almost_equal(model.network.parameters.eval().tolist(), [[1], [0.5]])
 
+    def test_dim(self):
+        rbfs_count = 16
+
+        model = sol.Model()
+        for (w, c, a) in zip(np.ones(rbfs_count),
+                             sol.random_points_2d(-0.1, 1.1, -0.1, 1.1, rbfs_count),
+                             np.ones(rbfs_count)):
+            model.add_rbf(w, 'gaussian', c, parameters=[a])
+        model.compile()
+
+        def equation(y, x):
+            grad = tf.gradients(y(tf.expand_dims(x, 1)), x)[0]
+            dx1 = grad[:, 0]
+            dx2 = grad[:, 1]
+            return tf.gradients(dx1, x)[0][:, 0] + tf.gradients(dx2, x)[0][:, 1]
+
+        x = tf.placeholder(dtype=tf.float32, shape=(3, 2))
+        with tf.Session() as s:
+            s.run(tf.global_variables_initializer())
+            print(s.run(equation(model.network.y, x), {x: [[1.0, 1.0], [2.0, 2.0], [3.0, 3.0]]}))
+

@@ -52,15 +52,14 @@ class Loss(object):
                 self.__constrain_placeholders_dict[constrain_name] = xs
 
                 # output: tensor (n) = [error1, error2...]
-                def constrain_func(x):
+                def constrain_func(xs):
                     with tf.name_scope("{}-constrain-left".format(constrain_name)):
-                        left = constrain.left(self.__model.network.y, x)
+                        left = constrain.left(self.__model.network.y, xs)
                     with tf.name_scope("{}-constrain-right".format(constrain_name)):
-                        right = constrain.right(x)
+                        right = constrain.right(xs)
                     return left - right
 
-                control_points_errors.append(alpha * tf.square(
-                    tf.map_fn(constrain_func, xs)))
+                control_points_errors.append(alpha * tf.square(constrain_func(xs)))
 
         with tf.name_scope("solver-compile-error-functional"):
             self.__error = tf.reduce_mean(tf.concat(control_points_errors, axis=0))

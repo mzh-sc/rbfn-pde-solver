@@ -11,4 +11,4 @@ class Network(object):
 
     def y(self, x):
         with tf.name_scope("rbfn-value"):
-            return tf.reduce_sum(self.weights * self._function(x, self.centers, self.parameters))
+            return tf.reduce_sum(self.weights * self._function(x, self.centers, self.parameters), axis=-1)
