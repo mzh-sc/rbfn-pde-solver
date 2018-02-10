@@ -47,7 +47,7 @@ class TestModel(TestCase):
         model.compile()
 
         def equation(y, x):
-            grad = tf.gradients(y(tf.expand_dims(x, 1)), x)[0]
+            grad = tf.gradients(y(x), x)[0]
             dx1 = grad[:, 0]
             dx2 = grad[:, 1]
             return tf.gradients(dx1, x)[0][:, 0] + tf.gradients(dx2, x)[0][:, 1]

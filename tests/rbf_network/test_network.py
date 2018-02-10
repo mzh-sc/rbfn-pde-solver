@@ -18,10 +18,30 @@ class TestNetwork(unittest.TestCase):
         with tf.Session() as s:
             s.run(tf.global_variables_initializer())
 
+            # x
             x = tf.placeholder(dtype=tf.float64, shape=(1,))
             self.assertEqual(s.run(nn.y(x), {x: [1.0]}),
                              1.0 * math.exp(-(1.0 - 1.5)**2 / (2 * 1.0**2)) +
                              0.5 * math.exp(-(1.0 - 1.2)**2 / (2 * 0.1**2)))
+
+            # list of points
+            xs = tf.placeholder(dtype=tf.float64, shape=(2, 1))
+            y = s.run(nn.y(xs), {xs: [[1.0], [2.0]]})
+            self.assertEqual(y[0],
+                             1.0 * math.exp(-(1.0 - 1.5) ** 2 / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-(1.0 - 1.2) ** 2 / (2 * 0.1 ** 2)))
+            self.assertEqual(y[1],
+                             1.0 * math.exp(-(2.0 - 1.5) ** 2 / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-(2.0 - 1.2) ** 2 / (2 * 0.1 ** 2)))
+
+            # list of coordinates
+            y = s.run(nn.y([xs]), {xs: [[1.0], [2.0]]})
+            self.assertEqual(y[0],
+                             1.0 * math.exp(-(1.0 - 1.5) ** 2 / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-(1.0 - 1.2) ** 2 / (2 * 0.1 ** 2)))
+            self.assertEqual(y[1],
+                             1.0 * math.exp(-(2.0 - 1.5) ** 2 / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-(2.0 - 1.2) ** 2 / (2 * 0.1 ** 2)))
 
     def test_y_2d(self):
         rbf = rbfn.Gaussian()
@@ -34,10 +54,31 @@ class TestNetwork(unittest.TestCase):
         with tf.Session() as s:
             s.run(tf.global_variables_initializer())
 
+            # x
             x = tf.placeholder(dtype=tf.float64, shape=(2,))
             self.assertEqual(s.run(nn.y(x), {x: [1.0, 2.0]}),
                              1.0 * math.exp(-((1.0 - 1.5) ** 2 + (2.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
                              0.5 * math.exp(-((1.0 - 1.2) ** 2 + (2.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
+
+            # xs - list of points
+            xs = tf.placeholder(dtype=tf.float64, shape=(2, 2))
+            ys = s.run(nn.y(xs), {xs: [[1.0, 2.0], [2.0, 1.0]]})
+            self.assertEqual(ys[0],
+                             1.0 * math.exp(-((1.0 - 1.5) ** 2 + (2.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-((1.0 - 1.2) ** 2 + (2.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
+            self.assertEqual(ys[1],
+                             1.0 * math.exp(-((2.0 - 1.5) ** 2 + (1.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-((2.0 - 1.2) ** 2 + (1.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
+
+            # xs - list of coordinates
+            xs = tf.placeholder(dtype=tf.float64, shape=(2, 2))
+            ys = s.run(nn.y(tf.split(xs, num_or_size_splits=2, axis=1)), {xs: [[1.0, 2.0], [2.0, 1.0]]})
+            self.assertEqual(ys[0],
+                             1.0 * math.exp(-((1.0 - 1.5) ** 2 + (2.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-((1.0 - 1.2) ** 2 + (2.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
+            self.assertEqual(ys[1],
+                             1.0 * math.exp(-((2.0 - 1.5) ** 2 + (1.0 - 2) ** 2) / (2 * 1.0 ** 2)) +
+                             0.5 * math.exp(-((2.0 - 1.2) ** 2 + (1.0 - 1.1) ** 2) / (2 * 0.1 ** 2)))
 
     @unittest.skip
     def test_variables_aggregation(self):

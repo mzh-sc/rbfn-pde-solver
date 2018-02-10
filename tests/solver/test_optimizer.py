@@ -25,7 +25,7 @@ class TestOptimizer(TestCase):
         problem = slv.Problem()
         problem.add_constrain('equation',
                               lambda y, x: y(x),
-                              lambda x: tf.exp(-tf.pow(x - 2, 2) / 2),
+                              lambda x: tf.exp(-tf.pow(x[0] - 2, 2) / 2),
                               1)
         problem.compile()
 
@@ -69,7 +69,7 @@ class TestOptimizer(TestCase):
         problem = slv.Problem()
         problem.add_constrain('equation',
                               lambda y, x: y(x),
-                              lambda x: tf.exp(-(tf.pow(x - 2, 2) + tf.pow(x - 2, 2)) / 2),
+                              lambda x: tf.exp(-(tf.pow(x[0] - 2, 2) + tf.pow(x[1] - 2, 2)) / 2),
                               2)
         problem.compile()
 

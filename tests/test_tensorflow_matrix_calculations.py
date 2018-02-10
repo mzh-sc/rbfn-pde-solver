@@ -65,3 +65,8 @@ class TestTensorflowMatrixCalculations(ut.TestCase):
 
             # the same, but manual
             print(s.run(f([c[:, 0], c[:,1]]))) #[ 2.  4.  6.]
+
+            print(s.run(tf.split(c, num_or_size_splits=tf.shape(c)[-1], axis=1)))
+
+    def test_op1(self):
+        print(isinstance([1, 2].count()))

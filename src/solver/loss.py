@@ -59,7 +59,10 @@ class Loss(object):
                         right = constrain.right(xs)
                     return left - right
 
-                control_points_errors.append(alpha * tf.square(constrain_func(xs)))
+                # xs=[[1, 1], [2, 2], [3, 3]] - xs_split_by_coordinates=list([[1], [2], [3]], [[1], [2], [3]])
+                # it is needed to simplify constrains definition
+                xs_split_by_coordinates = tf.split(xs, num_or_size_splits=constrain.x_dim, axis=1)
+                control_points_errors.append(alpha * tf.square(constrain_func(xs_split_by_coordinates)))
 
         with tf.name_scope("solver-compile-error-functional"):
             self.__error = tf.reduce_mean(tf.concat(control_points_errors, axis=0))
