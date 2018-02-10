@@ -87,20 +87,20 @@ class Model(object):
         ps = []
         for i, (rbf_name, w, c, p) in enumerate(self.__rbfs):
             ws.append(w)
-            cs.append(c)
-            ps.append(p)
+            cs.extend(c)
+            ps.extend(p)
 
         with tf.name_scope("model-compile-aggregated-variables-creation"):
-            # the network's aggregated variables (for continence. See test_variables_aggregation in test_network) creation
+            # the network's aggregated variables (for convenience. See test_variables_aggregation in test_network) creation
             self.__nn_weights = tf.get_variable(Model.WEIGHTS, initializer=tf.constant(ws, dtype=nn.type, shape=(rbfs_count,)), dtype=nn.type)
-            self.__nn_centers = tf.get_variable(Model.CENTERS, initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count, center_dim)), dtype=nn.type)
-            self.__nn_parameters = tf.get_variable(Model.PARAMETERS, initializer=tf.constant(ps, dtype=nn.type, shape=(rbfs_count, parameters_count)), dtype=nn.type)
+            self.__nn_centers = tf.get_variable(Model.CENTERS, initializer=tf.constant(cs, dtype=nn.type, shape=(rbfs_count * center_dim,)), dtype=nn.type)
+            self.__nn_parameters = tf.get_variable(Model.PARAMETERS, initializer=tf.constant(ps, dtype=nn.type, shape=(rbfs_count * parameters_count,)), dtype=nn.type)
 
         with tf.name_scope("model-compile-network-creation"):
             self.__nn = nn.Network(self.__known_rbfs[rbf_name]())
             self.__nn.weights = self.__nn_weights
-            self.__nn.centers = self.__nn_centers
-            self.__nn.parameters = self.__nn_parameters
+            self.__nn.centers = tf.reshape(self.__nn_centers, [-1, center_dim])
+            self.__nn.parameters = tf.reshape(self.__nn_parameters, [-1, parameters_count])
 
         # can not do it here as later have to invoke global initializer that reset these values
         # moreover it is even better to do it via constant initializer as it isn't required to the create session

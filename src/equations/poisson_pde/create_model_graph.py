@@ -48,8 +48,8 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
     #     return h[0][0] + h[1][1]
 
     def equation(y, x):
-        dydx1 = tf.gradients(y(x), x[0])[0]
-        dydx2 = tf.gradients(y(x), x[1])[0]
+        dydx1 = tf.gradients(y, x[0])[0]
+        dydx2 = tf.gradients(y, x[1])[0]
 
         return tf.gradients(dydx1, x[0])[0] + tf.gradients(dydx2, x[1])[0]
 
@@ -60,7 +60,7 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
                           lambda x: tf.sin(math.pi * x[0]) * tf.sin(math.pi * x[1]),
                           2)
     problem.add_constrain(BC1_CONSTRAIN,
-                          lambda y, x: y(x),
+                          lambda y, x: y,
                           lambda x: 0,
                           2)
     problem.compile()
@@ -86,7 +86,7 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
         s.run(tf.global_variables_initializer())
         Solution.save(Solution.create(model, loss, optimizer))
 
-        #r = tf.hessians(loss.value, [model.centers])
+        #r = tf.hessians(loss.value, [model.centers, model.parameters])
         saver.save(s, model_dir + '/' + model_name)
 
         if write_graph_log:
