@@ -17,6 +17,23 @@ class TestTensorflow(TestCase):
             print(s.run(var1[:, 0]))
             print(s.run(tf.concat((var1[:, 0], var1[:, 1]), axis=0)))
 
+    def test_try_gradient_as_hessian(self):
+        with tf.Session() as s:
+            x = tf.Variable([1, 1], dtype=np.float64)
+            s.run(tf.initialize_all_variables())
+
+            y = lambda x: x[0] * x[0] * 5 + x[1] * x[1] * 2
+
+            x0 = x[0]
+            x1 = x[1]
+            gr = tf.gradients(y([x0, x1]), [x0, x1])
+            print(s.run(gr))
+
+            hsx1 = tf.gradients(gr[0], x0)[0]
+            hsx2 = tf.gradients(gr[1], x1)[0]
+            print(s.run(hsx1))
+            print(s.run(hsx2))
+
     def test_try_hessian(self):
         """
         Hessian calculations performance test

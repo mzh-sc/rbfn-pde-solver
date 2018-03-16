@@ -48,10 +48,10 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
     #     return h[0][0] + h[1][1]
 
     def equation(y, x):
-        dydx1 = tf.gradients(y, x[0])[0]
-        dydx2 = tf.gradients(y, x[1])[0]
-
-        return tf.gradients(dydx1, x[0])[0] + tf.gradients(dydx2, x[1])[0]
+        x0 = x[0]
+        x1 = x[1]
+        dydx0, dydx1 = tf.gradients(y([x0, x1]), [x0, x1])
+        return tf.gradients(dydx0, x[0])[0] + tf.gradients(dydx1, x[1])[0]
 
     # todo: [opt] don't use tf. Precalculate them?
     # the problem equations
@@ -60,7 +60,7 @@ def create_model_graph(model_dir, model_name, write_graph_log=False):
                           lambda x: tf.sin(math.pi * x[0]) * tf.sin(math.pi * x[1]),
                           2)
     problem.add_constrain(BC1_CONSTRAIN,
-                          lambda y, x: y,
+                          lambda y, x: y(x),
                           lambda x: 0,
                           2)
     problem.compile()

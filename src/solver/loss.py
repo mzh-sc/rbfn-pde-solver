@@ -54,7 +54,7 @@ class Loss(object):
                 # output: tensor (n) = [error1, error2...]
                 def constrain_func(xs):
                     with tf.name_scope("{}-constrain-left".format(constrain_name)):
-                        left = constrain.left(self.__model.network.y(xs), xs)
+                        left = constrain.left(self.__model.network.y, xs)
                     with tf.name_scope("{}-constrain-right".format(constrain_name)):
                         right = constrain.right(xs)
                     return left - right
