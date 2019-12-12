@@ -1,10 +1,10 @@
-# RbfnPdeSolver
+# rbfn-pde-solver
 
-RbfnPdeSolver is a software library to solve boundary value and inverse problems using radial basis function networks as an approximation of the solution.
+rbfn-pde-solver is a software library to solve boundary value and inverse problems using radial basis function networks as an approximation of the solution.
 
-The mathematical background of RbfnPdeSolver is described in [Solving boundary value problems of mathematical physics using radial basis function networks](https://link.springer.com/article/10.1134/S0965542517010079).
+The mathematical background of rbfn-pde-solver is described in [Solving boundary value problems of mathematical physics using radial basis function networks](https://link.springer.com/article/10.1134/S0965542517010079).
 
-Originally, the library was written in C# (see https://github.com/GitMaximZh/RBFN_PDE_Solver_CSharp).
+Originally, the library was written in C# (see https://github.com/GitMaximZh/rbf-pde-solver-csharp).
 
 ### Tech
 
